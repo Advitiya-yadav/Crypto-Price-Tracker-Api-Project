@@ -3,8 +3,12 @@ import requests
 
 st.title("🪙 Crypto Price Tracker")
 
-coin = st.selectbox("Enter coin name (Bitcoin, Ethereum, Solana)", ["bitcoin", "ethereum", "solana"])
-currency = st.selectbox("Select currency", ["usd", "inr", "eur"])
+coin = st.selectbox("Enter coin name", 
+                    [
+                        "Bitcoin", "Ethereum", "Solana", "Binance Coin", "XRP", "Cardano","Dogecoin", 
+                        "Polkadot", "Avalanche", "Tron", "Polygon","Litecoin", "Chainlink", "Uniswap", "Shiba Inu"
+                    ]).lower().replace(" ", "-")
+currency = st.selectbox("Select Currency",["USD", "INR", "EUR"]).lower()
 
 if st.button("Get Price"):
     if coin == "":
