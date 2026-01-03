@@ -48,4 +48,4 @@ def price():
     # now we extract the price and 24 hour change from the data python dictionary and return it as a json responsestill
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
