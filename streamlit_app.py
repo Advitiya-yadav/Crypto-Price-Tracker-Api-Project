@@ -5,7 +5,7 @@ st.title("🪙 Crypto Price Tracker")
 
 coin = st.selectbox("Enter coin name", 
                     [
-                        "Bitcoin", "Ethereum", "Solana", "Binance Coin", "XRP", "Cardano","Dogecoin", 
+                        "Bitcoin", "Ethereum", "Solana", "XRP", "Cardano","Dogecoin", "Tether",
                         "Polkadot", "Avalanche", "Tron", "Polygon","Litecoin", "Chainlink", "Uniswap", "Shiba Inu"
                     ]).lower().replace(" ", "-")
 currency = st.selectbox("Select Currency",["USD", "INR", "EUR"]).lower()

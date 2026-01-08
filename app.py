@@ -14,8 +14,8 @@ def home():
 
 @app.route("/price", methods=["GET"])
 def price():
-    coin = request.args.get("coin")
-    currency = request.args.get("currency", "usd")
+    coin = request.args.get("coin").lower().strip()
+    currency = request.args.get("currency", "usd").lower().strip()
     #In this it is getting the coin and currency parameters from the request, with a default value of "usd" for currency if not provided
 
     if not coin:
