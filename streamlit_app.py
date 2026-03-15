@@ -1,3 +1,6 @@
+import sys
+import os
+
 import streamlit as st
 import requests
 
@@ -37,13 +40,17 @@ if st.button("Get Price"):
         r = requests.get(url, params=params, timeout=10)
         data = r.json()
 
-        price = data[coin_id][currency]
-        change = round(data[coin_id][f"{currency}_24h_change"], 2)
+        if coin_id not in data:
+            st.error(f"Could not fetch data for {coin_name}. CoinGecko may be rate limiting. Try again in a moment.")
+        else:
+            price = data[coin_id][currency]
+            change_key = f"{currency}_24h_change"
+            change = round(data[coin_id].get(change_key, 0), 2)
 
-        st.metric(
-            label=f"{coin_name} price",
-            value=f"{price} {currency.upper()}",
-            delta=f"{change}%"
-        )
+            st.metric(
+                label=f"{coin_name} price",
+                value=f"{price} {currency.upper()}",
+                delta=f"{change}%"
+            )
     except Exception as e:
         st.error(f"Error fetching data: {e}")
