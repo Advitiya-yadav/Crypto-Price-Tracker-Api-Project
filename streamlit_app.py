@@ -1,6 +1,3 @@
-import sys
-import os
-
 import streamlit as st
 import requests
 
@@ -35,9 +32,12 @@ if st.button("Get Price"):
         "vs_currencies": currency,
         "include_24hr_change": "true"
     }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
 
     try:
-        r = requests.get(url, params=params, timeout=10)
+        r = requests.get(url, params=params, headers=headers, timeout=10)
         data = r.json()
 
         if coin_id not in data:
