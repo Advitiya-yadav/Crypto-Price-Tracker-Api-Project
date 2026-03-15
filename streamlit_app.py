@@ -3,6 +3,10 @@ import requests
 
 st.title("🪙 Crypto Price Tracker")
 
+st.info("🔑 Get your free API key at [coingecko.com/en/api](https://www.coingecko.com/en/api) → Demo API Key (free, no credit card)")
+
+api_key = st.text_input("Enter your CoinGecko API Key", type="password")
+
 COIN_IDS = {
     "Bitcoin": "bitcoin",
     "Ethereum": "ethereum",
@@ -25,32 +29,36 @@ coin_name = st.selectbox("Enter coin name", list(COIN_IDS.keys()))
 currency = st.selectbox("Select Currency", ["USD", "INR", "EUR"]).lower()
 
 if st.button("Get Price"):
-    coin_id = COIN_IDS[coin_name]
-    url = "https://api.coingecko.com/api/v3/simple/price"
-    params = {
-        "ids": coin_id,
-        "vs_currencies": currency,
-        "include_24hr_change": "true"
-    }
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
+    if not api_key:
+        st.warning("Please enter your CoinGecko API key first!")
+    else:
+        coin_id = COIN_IDS[coin_name]
+        url = "https://api.coingecko.com/api/v3/simple/price"
+        params = {
+            "ids": coin_id,
+            "vs_currencies": currency,
+            "include_24hr_change": "true"
+        }
+        headers = {
+            "accept": "application/json",
+            "x-cg-demo-api-key": api_key
+        }
 
-    try:
-        r = requests.get(url, params=params, headers=headers, timeout=10)
-        data = r.json()
+        try:
+            r = requests.get(url, params=params, headers=headers, timeout=10)
+            data = r.json()
 
-        if coin_id not in data:
-            st.error(f"Could not fetch data for {coin_name}. CoinGecko may be rate limiting. Try again in a moment.")
-        else:
-            price = data[coin_id][currency]
-            change_key = f"{currency}_24h_change"
-            change = round(data[coin_id].get(change_key, 0), 2)
+            if coin_id not in data:
+                st.error("Invalid API key or rate limit hit. Double check your key!")
+            else:
+                price = data[coin_id][currency]
+                change_key = f"{currency}_24h_change"
+                change = round(data[coin_id].get(change_key, 0), 2)
 
-            st.metric(
-                label=f"{coin_name} price",
-                value=f"{price} {currency.upper()}",
-                delta=f"{change}%"
-            )
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
+                st.metric(
+                    label=f"{coin_name} price",
+                    value=f"{price} {currency.upper()}",
+                    delta=f"{change}%"
+                )
+        except Exception as e:
+            st.error(f"Error fetching data: {e}")
