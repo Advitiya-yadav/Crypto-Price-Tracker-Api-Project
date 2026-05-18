@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-BINANCE_URL = "https://api.binance.com/api/v3/ticker/24hr"
+COINGECKO_URL = "https://api.coingecko.com/api/v3/simple/price"
 
 
 @app.route("/")
@@ -13,55 +13,52 @@ def home():
 
 @app.route("/price", methods=["GET"])
 def price():
-    symbol = request.args.get("symbol", "").upper().strip()
-    
-    if not symbol:
-        return jsonify({"error": "symbol parameter is required (e.g., BTCUSDT)"}), 400
+    coin = request.args.get("coin", "").lower().strip()
+    currency = request.args.get("currency", "usd").lower().strip()
+
+    if not coin:
+        return jsonify({"error": "coin parameter is required"}), 400
+
+    params = {
+        "ids": coin,
+        "vs_currencies": currency,
+        "include_24hr_change": "true"
+    }
 
     headers = {
         "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        "User-Agent": "Mozilla/5.0"
     }
 
     try:
         r = requests.get(
-            BINANCE_URL,
-            params={"symbol": symbol},
+            COINGECKO_URL,
+            params=params,
             headers=headers,
             timeout=10
         )
         r.raise_for_status()
         data = r.json()
 
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 400:
-            return jsonify({"error": f"Invalid symbol: {symbol}"}), 400
-        return jsonify({
-            "error": "Failed to fetch data from Binance",
-            "status_code": e.response.status_code
-        }), 500
-    except requests.exceptions.Timeout:
-        return jsonify({"error": "Binance API request timed out"}), 503
-    except requests.exceptions.ConnectionError:
-        return jsonify({"error": "Connection error. Binance API unreachable"}), 503
     except requests.exceptions.RequestException as e:
         return jsonify({
-            "error": "Failed to fetch data from Binance",
+            "error": "Failed to fetch data from CoinGecko",
             "details": str(e)
         }), 500
 
+    if coin not in data:
+        return jsonify({"error": "coin not found"}), 404
+
     try:
         return jsonify({
-            "symbol": symbol,
-            "price": float(data["lastPrice"]),
-            "change_24h_percent": round(float(data["priceChangePercent"]), 2),
-            "high_24h": float(data["highPrice"]),
-            "low_24h": float(data["lowPrice"]),
-            "volume": float(data["volume"])
+            "coin": coin,
+            "currency": currency,
+            "price": data[coin][currency],
+            "change_24h": round(data[coin].get(f"{currency}_24h_change", 0), 2)
         })
-    except KeyError as e:
-        return jsonify({"error": f"Missing expected field: {e}"}), 500
+    except KeyError:
+        return jsonify({"error": "Invalid currency"}), 400
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000)
